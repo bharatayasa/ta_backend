@@ -184,7 +184,7 @@ app.get('/admin/users', verifyAccessToken, (req, res) => {
     });
 });
 
-app.get('/admin/users/:id', verifyAccessToken, (req, res) => {
+app.get('/admin/user/:id', verifyAccessToken, (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ status: 'error', message: 'Permission denied' });
     }
