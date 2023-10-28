@@ -1,13 +1,12 @@
 'use strict';
-
 const express = require('express');
 const app = express();
-const cors = require('cors');
-require('dotenv').config();
 const routes = require('./router/endpoin');
+const cors = require('cors');
+const dotenv = require('dotenv');
 
-app.use(express.json());
-app.use(routes);
+
+dotenv.config();
 
 const corsOptions = {
     origin: '*',
@@ -15,15 +14,24 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 204,
 };
+
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(routes);
 
 app.get('/', (req, res) => {
-    res.send('server berjalan');
+    res.send('Server berjalan');
 });
 
 const host = 'localhost';
-const port = process.env.PORT
+const port = process.env.PORT || 3000;
 
 app.listen(port, host, () => {
     console.log(`Server berjalan di http://${host}:${port}`);
+});
+
+// Penanganan kesalahan global
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
 });
