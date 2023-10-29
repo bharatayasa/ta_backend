@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const secretKey = 'your_secret_key'; // Ganti dengan kunci rahasia yang sesuai
+const secretKey = 'your_secret_key';
 
 const userController = require('../controller/users');
 const news = require('../controller/news');
