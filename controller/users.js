@@ -198,9 +198,9 @@ module.exports = {
 
     adminUpdateUser:(req, res) => {
         const { id } = req.params;
-        const { username, name, email, password, role } = req.body;
+        const { username, name, email, role } = req.body; // Hapus "password" dari sini
         // Periksa apakah data lengkap
-        if (!id || !username || !name || !email || !password || !role) {
+        if (!id || !username || !name || !email || !role) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
         // Periksa apakah email sudah ada dalam database (kecuali untuk pengguna yang sedang diperbarui)
@@ -212,36 +212,30 @@ module.exports = {
             if (results.length > 0) {
                 return res.status(400).json({ status: 'error', message: 'Email already exists' });
             }
-            // Hash kata sandi sebelum menyimpannya
-            bcrypt.hash(password, 10, (err, hashedPassword) => {
-                if (err) {
-                    console.error('Error hashing password: ', err);
-                    return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                }
-                conn.query(
-                    'UPDATE users SET username = ?, name = ?, email = ?, password = ?, role = ? WHERE id = ?',
-                    [username, name, email, hashedPassword, role, id],
-                    (err, result) => {
-                        if (err) {
-                            console.error('Error updating user: ', err);
-                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                        }
-                        res.json({
-                            status: 'success',
-                            message: 'User updated',
-                            data: {
-                                id,
-                                username,
-                                name,
-                                email,
-                                role,
-                            }
-                        });
+            conn.query(
+                'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?', // Hapus "password" dari sini
+                [username, name, email, role, id],
+                (err, result) => {
+                    if (err) {
+                        console.error('Error updating user: ', err);
+                        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                     }
-                );
-            });
+                    res.json({
+                        status: 'success',
+                        message: 'User updated',
+                        data: {
+                            id,
+                            username,
+                            name,
+                            email,
+                            role,
+                        }
+                    });
+                }
+            );
         });
     },
+    
 
     adminDeleteUser:(req, res) => {
         const { id } = req.params;
