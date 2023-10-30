@@ -30,8 +30,8 @@ app.listen(port, host, () => {
     console.log(`Server berjalan di http://${host}:${port}`);
 });
 
-// Penanganan kesalahan global
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-});
+// // Penanganan kesalahan global
+// app.use((err, req, res, next) => {
+//     console.error(err.stack);
+//     res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+// });
