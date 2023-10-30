@@ -5,9 +5,8 @@ module.exports = {
     predik:(req, res) => {
         const inputData = req.body;
     
-        const insertQuery = 'INSERT INTO savepredict (kelas, confidence, description, prevention) VALUES (?, ?, ?, ?)';
-        const insertValues = [inputData.kelas, inputData.confidence, inputData.description, inputData.prevention];
-    
+        const insertQuery = 'INSERT INTO savepredict (kelas, confidence, description, prevention, userId) VALUES (?, ?, ?, ?, ?)';
+        const insertValues = [inputData.kelas, inputData.confidence, inputData.description, inputData.prevention, inputData.userId];
         conn.query(insertQuery, insertValues, (err, results) => {
             if (err) {
             console.error('Gagal memasukkan data ke database: ' + err.message);
