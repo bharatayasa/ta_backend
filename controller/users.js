@@ -102,7 +102,7 @@ module.exports = {
                 status: 'success',
                 message: 'User retrieved',
                 data: {
-                    id: `${user.role}-${user.id}`,
+                    id: user.id,
                     name: user.name,
                     email: user.email,
                     role: user.role
