@@ -5,6 +5,7 @@ const secretKey = 'your_secret_key';
 
 const userController = require('../controller/users');
 const news = require('../controller/news');
+const predik = require('../controller/predikInput'); 
 
 // Middleware untuk verifikasi akses token
 function verifyAccessToken(req, res, next) {
@@ -29,6 +30,9 @@ router.get('/admin/user/:id', verifyAccessToken, userController.getUserById);
 router.post('/admin/adduser', verifyAccessToken, userController.adminAddUser);
 router.put('/admin/updateuser/:id', verifyAccessToken, userController.adminUpdateUser);
 router.delete('/admin/deleteuser/:id', verifyAccessToken, userController.adminDeleteUser);
+
+// predik
+router.post('/savepredict', verifyAccessToken, predik.predik);
 
 // news
 router.get('/newsLokal', news.newsLokal);

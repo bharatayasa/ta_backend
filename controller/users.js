@@ -235,7 +235,6 @@ module.exports = {
             );
         });
     },
-    
 
     adminDeleteUser:(req, res) => {
         const { id } = req.params;
