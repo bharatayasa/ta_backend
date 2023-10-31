@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const secretKey = 'your_secret_key';
+
+require('dotenv').config();
+
+const secretKey = process.env.JWT_SECRET;
 
 const userController = require('../controller/users');
 const predik = require('../controller/predikInput');
 const prediksiControl = require('../controller/prediksiControl');
 
-// Middleware untuk verifikasi akses token
 function verifyAccessToken(req, res, next) {
     const token = req.header('Authorization');
     if (!token) {

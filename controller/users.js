@@ -2,6 +2,10 @@ const conn = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+require('dotenv').config();
+
+const secretKey = process.env.JWT_SECRET;
+
 module.exports = {
     register:(req, res) => {
         const { username, name, email, password } = req.body;
@@ -71,7 +75,7 @@ module.exports = {
                     username: user.username,
                     role: user.role
                 };
-                const accessToken = jwt.sign(payload, 'your_secret_key', { expiresIn: '1h' });
+                const accessToken = jwt.sign(payload, secretKey, { expiresIn: '1h' });
                 res.json({
                     status: 'success',
                     message: 'User logged successfully',

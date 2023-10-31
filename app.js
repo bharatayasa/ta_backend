@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 });
 
 const host = 'localhost';
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 
 app.listen(port, host, () => {
     console.log(`Server berjalan di http://${host}:${port}`);
