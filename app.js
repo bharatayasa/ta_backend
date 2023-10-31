@@ -5,7 +5,6 @@ const routes = require('./router/endpoin');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-
 dotenv.config();
 
 const corsOptions = {
@@ -29,9 +28,3 @@ const port = process.env.PORT;
 app.listen(port, host, () => {
     console.log(`Server berjalan di http://${host}:${port}`);
 });
-
-// // Penanganan kesalahan global
-// app.use((err, req, res, next) => {
-//     console.error(err.stack);
-//     res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-// });

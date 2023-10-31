@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 const secretKey = 'your_secret_key';
 
 const userController = require('../controller/users');
-const news = require('../controller/news');
-const predik = require('../controller/predikInput'); 
+const predik = require('../controller/predikInput');
+const prediksiControl = require('../controller/prediksiControl');
 
 // Middleware untuk verifikasi akses token
 function verifyAccessToken(req, res, next) {
@@ -24,18 +24,17 @@ function verifyAccessToken(req, res, next) {
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.get('/users/me', verifyAccessToken, userController.getMe);
+router.get('/user/me', verifyAccessToken, userController.getMe);
 router.get('/admin/users', verifyAccessToken, userController.getAllUsers);
 router.get('/admin/user/:id', verifyAccessToken, userController.getUserById);
-router.post('/admin/adduser', verifyAccessToken, userController.adminAddUser);
-router.put('/admin/updateuser/:id', verifyAccessToken, userController.adminUpdateUser);
-router.delete('/admin/deleteuser/:id', verifyAccessToken, userController.adminDeleteUser);
+router.post('/admin/add/user', verifyAccessToken, userController.adminAddUser);
+router.put('/admin/update/user/:id', verifyAccessToken, userController.adminUpdateUser);
+router.delete('/admin/delete/user/:id', verifyAccessToken, userController.adminDeleteUser);
 
 // predik
-router.post('/savepredict', verifyAccessToken, predik.predik);
-
-// news
-router.get('/newsLokal', news.newsLokal);
-router.get('/newsInter', news.newsinter);
+router.post('/save/predict', verifyAccessToken, predik.predik);
+router.get('/get/all/predict', verifyAccessToken, prediksiControl.getAllPredict);
+router.get('/get/predict/by/user', verifyAccessToken, prediksiControl.getPredictByUser);
+router.delete('/delete/history/:id', verifyAccessToken, prediksiControl.deleteHistory);
 
 module.exports = router;

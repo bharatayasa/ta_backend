@@ -6,7 +6,6 @@ module.exports = {
     register:(req, res) => {
         const { username, name, email, password } = req.body;
         const role = 'user';
-        // Periksa apakah alamat email sudah ada dalam database
         conn.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
             if (err) {
                 console.error('Error checking email duplication: ', err);
@@ -14,11 +13,9 @@ module.exports = {
                 return;
             }
             if (results.length > 0) {
-                // Alamat email sudah ada
                 res.status(400).json({ status: 'error', message: 'Email is already registered' });
                 return;
             }
-            // Alamat email belum terdaftar, lanjutkan pendaftaran
             bcrypt.hash(password, 10, (err, hashedPassword) => {
                 if (err) {
                     console.error('Error hashing password: ', err);
@@ -126,7 +123,7 @@ module.exports = {
                 data: results,
             });
         });
-    }, 
+    },
 
     getUserById:(req, res) => {
         if (req.user.role !== 'admin') {
@@ -198,8 +195,7 @@ module.exports = {
 
     adminUpdateUser:(req, res) => {
         const { id } = req.params;
-        const { username, name, email, role } = req.body; // Hapus "password" dari sini
-        // Periksa apakah data lengkap
+        const { username, name, email, role } = req.body;
         if (!id || !username || !name || !email || !role) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
@@ -238,11 +234,9 @@ module.exports = {
 
     adminDeleteUser:(req, res) => {
         const { id } = req.params;
-        // Periksa apakah ID pengguna ada
         if (!id) {
             return res.status(400).json({ status: 'error', message: 'Missing user ID' });
         }
-        // Hapus pengguna berdasarkan ID
         conn.query('DELETE FROM users WHERE id = ?', [id], (err, result) => {
             if (err) {
                 console.error('Error deleting user: ', err);

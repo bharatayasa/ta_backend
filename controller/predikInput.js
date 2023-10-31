@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser');
 const conn = require('../db');
 
 module.exports = {
