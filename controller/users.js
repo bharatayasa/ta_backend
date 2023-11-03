@@ -90,7 +90,7 @@ module.exports = {
 
     getMe:(req, res) => {
         const userId = req.user.userId;
-        conn.query('SELECT id, name, email, role FROM users WHERE id = ?', [userId], (err, results) => {
+        conn.query('SELECT id, name, username, email, role FROM users WHERE id = ?', [userId], (err, results) => {
             if (err) {
                 console.error('Error fetching user data: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -104,6 +104,7 @@ module.exports = {
                 message: 'User retrieved',
                 data: {
                     id: user.id,
+                    username: user.username,
                     name: user.name,
                     email: user.email,
                     role: user.role
@@ -114,32 +115,38 @@ module.exports = {
 
     updateMe: (req, res) => {
         const userId = req.user.userId;
-        const { name, email, username } = req.body;
-    
-        if (!name || !email || !username) {
-            return res.status(400).json({ status: 'error', message: 'Name, email, and username are required' });
+        const { username, name, email } = req.body;
+        if (!username || !name || !email) {
+            return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
-    
-        conn.query('UPDATE users SET name = ?, email = ?, username = ? WHERE id = ?', [name, email, username, userId], (err, results) => {
+        conn.query('SELECT email FROM users WHERE email = ? AND id != ?', [email, userId], (err, results) => {
             if (err) {
-                console.error('Error updating user data: ', err);
+                console.error('Error checking email: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
-    
-            if (results.affectedRows === 0) {
-                return res.status(404).json({ status: 'error', message: 'Resource not found' });
+            if (results.length > 0) {
+                return res.status(400).json({ status: 'error', message: 'Email already exists' });
             }
-    
-            res.json({
-                status: 'success',
-                message: 'User data updated',
-                data: {
-                    id: userId,
-                    name,
-                    email,
-                    username,
-                },
-            });
+            conn.query(
+                'UPDATE users SET username = ?, name = ?, email = ? WHERE id = ?',
+                [username, name, email, userId],
+                (err, result) => {
+                    if (err) {
+                        console.error('Error updating user: ', err);
+                        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                    }
+                    res.json({
+                        status: 'success',
+                        message: 'User updated',
+                        data: {
+                            id: userId,
+                            username,
+                            name,
+                            email,
+                        }
+                    });
+                }
+            );
         });
     },
 
@@ -232,7 +239,7 @@ module.exports = {
             res.json({
                 status: 'success',
                 message: 'User retrieved',
-                data: results[0], // Mengambil data pengguna pertama dari hasil query
+                data: results[0], 
             });
         });
     },
@@ -300,7 +307,7 @@ module.exports = {
                 return res.status(400).json({ status: 'error', message: 'Email already exists' });
             }
             conn.query(
-                'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?', // Hapus "password" dari sini
+                'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?',
                 [username, name, email, role, id],
                 (err, result) => {
                     if (err) {
