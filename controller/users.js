@@ -112,6 +112,93 @@ module.exports = {
         });
     }, 
 
+    updateMe: (req, res) => {
+        const userId = req.user.userId;
+        const { name, email, username } = req.body;
+    
+        if (!name || !email || !username) {
+            return res.status(400).json({ status: 'error', message: 'Name, email, and username are required' });
+        }
+    
+        conn.query('UPDATE users SET name = ?, email = ?, username = ? WHERE id = ?', [name, email, username, userId], (err, results) => {
+            if (err) {
+                console.error('Error updating user data: ', err);
+                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+            }
+    
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ status: 'error', message: 'Resource not found' });
+            }
+    
+            res.json({
+                status: 'success',
+                message: 'User data updated',
+                data: {
+                    id: userId,
+                    name,
+                    email,
+                    username,
+                },
+            });
+        });
+    },
+
+    updateMyPassword: (req, res) => {
+        const userId = req.user.userId;
+        const { currentPassword, newPassword } = req.body;
+    
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ status: 'error', message: 'Current password and new password are required' });
+        }
+    
+        conn.query('SELECT password FROM users WHERE id = ?', [userId], (err, results) => {
+            if (err) {
+                console.error('Error fetching user data: ', err);
+                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+            }
+    
+            if (results.length === 0) {
+                return res.status(404).json({ status: 'error', message: 'User not found' });
+            }
+    
+            const user = results[0];
+    
+            bcrypt.compare(currentPassword, user.password, (err, passwordMatch) => {
+                if (err) {
+                    console.error('Error comparing passwords: ', err);
+                    return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                }
+    
+                if (!passwordMatch) {
+                    return res.status(401).json({ status: 'error', message: 'Current password is incorrect' });
+                }
+    
+                bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+                    if (err) {
+                        console.error('Error hashing new password: ', err);
+                        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                    }
+    
+                    conn.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], (err, updateResults) => {
+                        if (err) {
+                            console.error('Error updating password: ', err);
+                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                        }
+    
+                        if (updateResults.affectedRows === 0) {
+                            return res.status(404).json({ status: 'error', message: 'User not found' });
+                        }
+    
+                        res.json({
+                            status: 'success',
+                            message: 'Password updated successfully',
+                        });
+                    });
+                });
+            });
+        });
+    },
+
     getAllUsers:(req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ status: 'error', message: 'Permission denied' });

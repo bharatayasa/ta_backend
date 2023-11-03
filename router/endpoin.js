@@ -27,6 +27,8 @@ function verifyAccessToken(req, res, next) {
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.get('/user/me', verifyAccessToken, userController.getMe);
+router.put('/user/update/me', verifyAccessToken, userController.updateMe);
+router.put('/update/my/password', verifyAccessToken, userController.updateMyPassword); 
 router.get('/admin/users', verifyAccessToken, userController.getAllUsers);
 router.get('/admin/user/:id', verifyAccessToken, userController.getUserById);
 router.post('/admin/add/user', verifyAccessToken, userController.adminAddUser);
