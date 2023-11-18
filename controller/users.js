@@ -7,41 +7,58 @@ require('dotenv').config();
 const secretKey = process.env.JWT_SECRET;
 
 module.exports = {
-    register:(req, res) => {
+    register: (req, res) => {
         const { username, name, email, password } = req.body;
         const role = 'user';
-        conn.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+    
+        conn.query('SELECT * FROM users WHERE username = ?', [username], (err, usernameResults) => {
             if (err) {
-                console.error('Error checking email duplication: ', err);
+                console.error('Error checking username duplication: ', err);
                 res.status(500).json({ error: 'Internal Server Error' });
                 return;
             }
-            if (results.length > 0) {
-                res.status(400).json({ status: 'error', message: 'Email is already registered' });
+            if (usernameResults.length > 0) {
+                res.status(400).json({ status: 'error', message: 'Username Sudah Ada' });
                 return;
             }
-            bcrypt.hash(password, 10, (err, hashedPassword) => {
+    
+            conn.query('SELECT * FROM users WHERE email = ?', [email], (err, emailResults) => {
                 if (err) {
-                    console.error('Error hashing password: ', err);
-                    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                    console.error('Error checking email duplication: ', err);
+                    res.status(500).json({ error: 'Internal Server Error' });
                     return;
                 }
-                const user = {
-                    username,
-                    name,
-                    email,
-                    password: hashedPassword,
-                    role,
-                };
-                const query = 'INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)';
-                conn.query(query, [user.username, user.name, user.email, user.password, user.role], (err, results) => {
+                if (emailResults.length > 0) {
+                    res.status(400).json({ status: 'error', message: 'Email Sudah Ada' });
+                    return;
+                }
+    
+                bcrypt.hash(password, 10, (err, hashedPassword) => {
                     if (err) {
-                        console.error('Error registering user: ', err);
+                        console.error('Error hashing password: ', err);
                         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         return;
                     }
-                    user.id = results.insertId;
-                    res.json({ status: 'success', message: 'User Created' });
+    
+                    const user = {
+                        username,
+                        name,
+                        email,
+                        password: hashedPassword,
+                        role,
+                    };
+    
+                    const query = 'INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)';
+                    conn.query(query, [user.username, user.name, user.email, user.password, user.role], (err, results) => {
+                        if (err) {
+                            console.error('Error registering user: ', err);
+                            res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                            return;
+                        }
+    
+                        user.id = results.insertId;
+                        res.json({ status: 'success', message: 'User Created' });
+                    });
                 });
             });
         });
@@ -244,47 +261,62 @@ module.exports = {
         });
     },
 
-    adminAddUser:(req, res) => {
+    adminAddUser: (req, res) => {
         if (!req.body.username || !req.body.name || !req.body.email || !req.body.password || !req.body.role) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
         const { username, name, email, password, role } = req.body;
-        conn.query('SELECT email FROM users WHERE email = ?', [email], (err, results) => {
+    
+        conn.query('SELECT email FROM users WHERE email = ?', [email], (err, emailResults) => {
             if (err) {
                 console.error('Error checking email: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
-            if (results.length > 0) {
-                return res.status(400).json({ status: 'error', message: 'Email already exists' });
+            if (emailResults.length > 0) {
+                return res.status(400).json({ status: 'error', message: 'E-Mmail sudah ada' });
             }
-            bcrypt.hash(password, 10, (err, hashedPassword) => {
+    
+            conn.query('SELECT username FROM users WHERE username = ?', [username], (err, usernameResults) => {
                 if (err) {
-                    console.error('Error hashing password: ', err);
+                    console.error('Error checking username: ', err);
                     return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                 }
-                const newUser = {
-                    username,
-                    name,
-                    email,
-                    password: hashedPassword,
-                    role
-                };
-                conn.query('INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)', [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role], (err, result) => {
+                if (usernameResults.length > 0) {
+                    return res.status(400).json({ status: 'error', message: 'Username sudah ada' });
+                }
+    
+                bcrypt.hash(password, 10, (err, hashedPassword) => {
                     if (err) {
-                        console.error('Error adding user: ', err);
+                        console.error('Error hashing password: ', err);
                         return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                     }
-                    newUser.id = result.insertId;
-                    res.json({
-                        status: 'success',
-                        message: 'User created',
-                        data: {
-                            id: newUser.id,
-                            username: newUser.username,
-                            name: newUser.name,
-                            email: newUser.email,
-                            role: newUser.role,
+    
+                    const newUser = {
+                        username,
+                        name,
+                        email,
+                        password: hashedPassword,
+                        role
+                    };
+    
+                    conn.query('INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)', [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role], (err, result) => {
+                        if (err) {
+                            console.error('Error adding user: ', err);
+                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         }
+    
+                        newUser.id = result.insertId;
+                        res.json({
+                            status: 'success',
+                            message: 'User created',
+                            data: {
+                                id: newUser.id,
+                                username: newUser.username,
+                                name: newUser.name,
+                                email: newUser.email,
+                                role: newUser.role,
+                            }
+                        });
                     });
                 });
             });
