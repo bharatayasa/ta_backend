@@ -273,7 +273,7 @@ module.exports = {
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
             if (emailResults.length > 0) {
-                return res.status(400).json({ status: 'error', message: 'E-Mmail sudah ada' });
+                return res.status(400).json({ status: 'error', message: 'e-mail sudah ada' });
             }
     
             conn.query('SELECT username FROM users WHERE username = ?', [username], (err, usernameResults) => {
@@ -323,44 +323,57 @@ module.exports = {
         });
     },
 
-    adminUpdateUser:(req, res) => {
+    adminUpdateUser: (req, res) => {
         const { id } = req.params;
         const { username, name, email, role } = req.body;
+    
         if (!id || !username || !name || !email || !role) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
-        // Periksa apakah email sudah ada dalam database (kecuali untuk pengguna yang sedang diperbarui)
-        conn.query('SELECT email FROM users WHERE email = ? AND id != ?', [email, id], (err, results) => {
+    
+        conn.query('SELECT email FROM users WHERE email = ? AND id != ?', [email, id], (err, emailResults) => {
             if (err) {
                 console.error('Error checking email: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
-            if (results.length > 0) {
+            if (emailResults.length > 0) {
                 return res.status(400).json({ status: 'error', message: 'Email already exists' });
             }
-            conn.query(
-                'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?',
-                [username, name, email, role, id],
-                (err, result) => {
-                    if (err) {
-                        console.error('Error updating user: ', err);
-                        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                    }
-                    res.json({
-                        status: 'success',
-                        message: 'User updated',
-                        data: {
-                            id,
-                            username,
-                            name,
-                            email,
-                            role,
-                        }
-                    });
+    
+            conn.query('SELECT username FROM users WHERE username = ? AND id != ?', [username, id], (err, usernameResults) => {
+                if (err) {
+                    console.error('Error checking username: ', err);
+                    return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                 }
-            );
+                if (usernameResults.length > 0) {
+                    return res.status(400).json({ status: 'error', message: 'Username already exists' });
+                }
+    
+                conn.query(
+                    'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?',
+                    [username, name, email, role, id],
+                    (err, result) => {
+                        if (err) {
+                            console.error('Error updating user: ', err);
+                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                        }
+                        res.json({
+                            status: 'success',
+                            message: 'User updated',
+                            data: {
+                                id,
+                                username,
+                                name,
+                                email,
+                                role,
+                            },
+                        });
+                    }
+                );
+            });
         });
     },
+
 
     adminDeleteUser:(req, res) => {
         const { id } = req.params;
