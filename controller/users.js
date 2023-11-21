@@ -133,37 +133,52 @@ module.exports = {
     updateMe: (req, res) => {
         const userId = req.user.userId;
         const { username, name, email } = req.body;
+        
         if (!username || !name || !email) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
-        conn.query('SELECT email FROM users WHERE email = ? AND id != ?', [email, userId], (err, results) => {
+    
+        conn.query('SELECT id FROM users WHERE username = ? AND id != ?', [username, userId], (err, usernameResults) => {
             if (err) {
-                console.error('Error checking email: ', err);
+                console.error('Error checking username: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
-            if (results.length > 0) {
-                return res.status(400).json({ status: 'error', message: 'Email already exists' });
+    
+            if (usernameResults.length > 0) {
+                return res.status(400).json({ status: 'error', message: 'Username already exists' });
             }
-            conn.query(
-                'UPDATE users SET username = ?, name = ?, email = ? WHERE id = ?',
-                [username, name, email, userId],
-                (err, result) => {
-                    if (err) {
-                        console.error('Error updating user: ', err);
-                        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                    }
-                    res.json({
-                        status: 'success',
-                        message: 'User updated',
-                        data: {
-                            id: userId,
-                            username,
-                            name,
-                            email,
-                        }
-                    });
+    
+            conn.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId], (err, emailResults) => {
+                if (err) {
+                    console.error('Error checking email: ', err);
+                    return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                 }
-            );
+    
+                if (emailResults.length > 0) {
+                    return res.status(400).json({ status: 'error', message: 'Email already exists' });
+                }
+    
+                conn.query(
+                    'UPDATE users SET username = ?, name = ?, email = ? WHERE id = ?',
+                    [username, name, email, userId],
+                    (err, result) => {
+                        if (err) {
+                            console.error('Error updating user: ', err);
+                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                        }
+                        res.json({
+                            status: 'success',
+                            message: 'User updated',
+                            data: {
+                                id: userId,
+                                username,
+                                name,
+                                email,
+                            }
+                        });
+                    }
+                );
+            });
         });
     },
 
