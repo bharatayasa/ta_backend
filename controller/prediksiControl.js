@@ -19,23 +19,24 @@ module.exports = {
     },
 
     getPredictByUser: (req, res) => {
-        if (req.user.role !== 'user') {
+        if (req.user.role !== 'petani') {
             return res.status(403).json({ status: 'error', message: 'Permission denied' });
         }
     
         const userId = req.user.userId;
     
-        conn.query('SELECT * FROM savepredict WHERE userId = ?', [userId], (err, results) => {
-            if (err) {
-                console.error('Error fetching predict data: ', err);
-                return res.status(500).json({ status: 'error', message: 'Internal Server Error', error: err });
-            }
-            res.json({
-                status: 'success',
-                message: 'Predict retrieved',
-                data: results,
+        conn.query('SELECT * FROM savepredict WHERE userId = ? AND status = ?',
+            [userId, 'aktif'], (err, results) => {
+                if (err) {
+                    console.error('Error fetching predict data: ', err);
+                    return res.status(500).json({ status: 'error', message: 'Internal Server Error', error: err });
+                }
+                res.json({
+                    status: 'success',
+                    message: 'Predict retrieved',
+                    data: results,
+                });
             });
-        });
     },
 
     deleteHistory:(req, res) => {
@@ -56,5 +57,61 @@ module.exports = {
                 message: 'Predict deleted',
             });
         });
+    },
+
+    updateStatus: (req, res) => {
+        const { id } = req.params;
+        const { newStatus } = req.body;
+    
+        if (!id || !newStatus) {
+            return res.status(400).json({ status: 'error', message: 'Missing ID or newStatus' });
+        }
+    
+        if (newStatus !== 'aktif' && newStatus !== 'nonaktif') {
+            return res.status(400).json({ status: 'error', message: 'Invalid newStatus value' });
+        }
+    
+        conn.query('UPDATE savepredict SET status = ? WHERE id = ?', [newStatus, id], (err, result) => {
+            if (err) {
+                console.error('Error updating status: ', err);
+                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+            }
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ status: 'error', message: 'Data not found' });
+            }
+    
+            res.json({
+                status: 'success',
+                message: 'Status updated',
+            });
+        });
+    }, 
+
+    updateStatusByUser:(req, res) => {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ status: 'error', message: 'Missing user ID' });
+        }
+    
+        const updateStatusQuery = 'UPDATE savepredict SET status = ? WHERE id = ?';
+        const newStatus = 'nonaktif';
+    
+        conn.query(updateStatusQuery, [newStatus, id], (err, result) => {
+            if (err) {
+                console.error('Error updating status: ', err);
+                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ status: 'error', message: 'Data not found' });
+            }
+    
+            res.json({
+                status: 'success',
+                message: 'Status updated to nonaktif',
+            });
+        });
     }
+
 }

@@ -28,7 +28,7 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.get('/user/me', verifyAccessToken, userController.getMe);
 router.put('/user/update/me', verifyAccessToken, userController.updateMe);
-router.put('/update/my/password', verifyAccessToken, userController.updateMyPassword); 
+router.put('/update/my/password', verifyAccessToken, userController.updateMyPassword);
 router.get('/admin/users', verifyAccessToken, userController.getAllUsers);
 router.get('/admin/user/:id', verifyAccessToken, userController.getUserById);
 router.post('/admin/add/user', verifyAccessToken, userController.adminAddUser);
@@ -40,5 +40,7 @@ router.post('/save/predict', verifyAccessToken, predik.predik);
 router.get('/get/all/predict', verifyAccessToken, prediksiControl.getAllPredict);
 router.get('/get/predict/by/user', verifyAccessToken, prediksiControl.getPredictByUser);
 router.delete('/delete/history/:id', verifyAccessToken, prediksiControl.deleteHistory);
+router.put('/update/status/:id', verifyAccessToken, prediksiControl.updateStatus);
+router.put('/update/status/user/:id', verifyAccessToken, prediksiControl.updateStatusByUser)
 
 module.exports = router;

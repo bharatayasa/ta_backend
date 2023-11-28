@@ -9,7 +9,7 @@ const secretKey = process.env.JWT_SECRET;
 module.exports = {
     register: (req, res) => {
         const { username, name, email, password } = req.body;
-        const role = 'user';
+        const role = 'petani';
     
         conn.query('SELECT * FROM users WHERE username = ?', [username], (err, usernameResults) => {
             if (err) {
@@ -314,7 +314,8 @@ module.exports = {
                         role
                     };
     
-                    conn.query('INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)', [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role], (err, result) => {
+                    conn.query('INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)', 
+                    [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role], (err, result) => {
                         if (err) {
                             console.error('Error adding user: ', err);
                             return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -388,7 +389,6 @@ module.exports = {
             });
         });
     },
-
 
     adminDeleteUser:(req, res) => {
         const { id } = req.params;
