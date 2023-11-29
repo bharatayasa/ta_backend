@@ -73,7 +73,10 @@ module.exports = {
     
         conn.query('UPDATE savepredict SET status = ? WHERE id = ?', [status, id], (err, result) => {
             if (err) {
-                console.error('Error updating status: ', err);
+                console.error('Database error updating status:', err);
+                if (err.code === 'ER_NO_SUCH_TABLE' || err.code === 'ER_BAD_FIELD_ERROR') {
+                    return res.status(500).json({ status: 'error', message: 'Internal Server Error: Invalid Database Configuration' });
+                }
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
     
@@ -86,7 +89,7 @@ module.exports = {
                 message: 'Status updated',
             });
         });
-    }, 
+    },
 
     updateStatusByUser:(req, res) => {
         const { id } = req.params;
