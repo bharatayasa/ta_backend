@@ -61,17 +61,17 @@ module.exports = {
 
     updateStatus: (req, res) => {
         const { id } = req.params;
-        const { newStatus } = req.body;
+        const { status } = req.body;
     
-        if (!id || !newStatus) {
-            return res.status(400).json({ status: 'error', message: 'Missing ID or newStatus' });
+        if (!id || !status) {
+            return res.status(400).json({ status: 'error', message: 'Missing ID or status' });
         }
     
-        if (newStatus !== 'aktif' && newStatus !== 'nonaktif') {
-            return res.status(400).json({ status: 'error', message: 'Invalid newStatus value' });
+        if (status !== 'aktif' && status !== 'nonaktif') {
+            return res.status(400).json({ status: 'error', message: 'Invalid status value' });
         }
     
-        conn.query('UPDATE savepredict SET status = ? WHERE id = ?', [newStatus, id], (err, result) => {
+        conn.query('UPDATE savepredict SET status = ? WHERE id = ?', [status, id], (err, result) => {
             if (err) {
                 console.error('Error updating status: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
