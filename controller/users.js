@@ -1,6 +1,10 @@
 const conn = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const transporter = require('../controller/mailer.js');
 
 require('dotenv').config();
 
@@ -10,100 +14,158 @@ module.exports = {
     register: (req, res) => {
         const { username, name, email, password } = req.body;
         const role = 'petani';
-    
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+
         conn.query('SELECT * FROM users WHERE username = ?', [username], (err, usernameResults) => {
+        if (err) {
+            console.error('Error checking username duplication: ', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+        if (usernameResults.length > 0) {
+            res.status(400).json({ status: 'error', message: 'Username Sudah Ada' });
+            return;
+        }
+
+        conn.query('SELECT * FROM users WHERE email = ?', [email], (err, emailResults) => {
             if (err) {
-                console.error('Error checking username duplication: ', err);
+                console.error('Error checking email duplication: ', err);
                 res.status(500).json({ error: 'Internal Server Error' });
                 return;
             }
-            if (usernameResults.length > 0) {
-                res.status(400).json({ status: 'error', message: 'Username Sudah Ada' });
+            if (emailResults.length > 0) {
+                res.status(400).json({ status: 'error', message: 'Email Sudah Ada' });
                 return;
             }
-    
-            conn.query('SELECT * FROM users WHERE email = ?', [email], (err, emailResults) => {
-                if (err) {
-                    console.error('Error checking email duplication: ', err);
-                    res.status(500).json({ error: 'Internal Server Error' });
-                    return;
-                }
-                if (emailResults.length > 0) {
-                    res.status(400).json({ status: 'error', message: 'Email Sudah Ada' });
-                    return;
-                }
-    
-                bcrypt.hash(password, 10, (err, hashedPassword) => {
+
+            bcrypt.hash(password, 10, (err, hashedPassword) => {
+            if (err) {
+                console.error('Error hashing password: ', err);
+                res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+                return;
+            }
+
+            const user = {
+                username,
+                name,
+                email,
+                password: hashedPassword,
+                role,
+                is_verified: false,
+                verification_token: verificationToken,
+            };
+
+            const query = 'INSERT INTO users (username, name, email, password, role, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?)';
+                conn.query(query, [user.username, user.name, user.email, user.password, user.role, verificationToken, user.is_verified], (err, results) => {
                     if (err) {
-                        console.error('Error hashing password: ', err);
+                        console.error('Error registering user: ', err);
                         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         return;
                     }
-    
-                    const user = {
-                        username,
-                        name,
-                        email,
-                        password: hashedPassword,
-                        role,
-                    };
-    
-                    const query = 'INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)';
-                    conn.query(query, [user.username, user.name, user.email, user.password, user.role], (err, results) => {
-                        if (err) {
-                            console.error('Error registering user: ', err);
-                            res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                            return;
-                        }
-    
+
+                    const verificationLink = `http://localhost:5000/verify?token=${verificationToken}`;
+
+                    const verificationHtmlPath = path.join(__dirname, '/html/email.html');
+                    let verificationHtmlContent;
+
+                    try {
+                        verificationHtmlContent = fs.readFileSync(verificationHtmlPath, 'utf-8');
+                    } catch (error) {
+                        console.error(error);
+                        return res.status(500).json({ message: 'Failed to load verification template' });
+                    }
+                    const emailContent = verificationHtmlContent.replace('{verificationLink}', verificationLink);
+
+                    transporter.sendMail({
+                        to: email,
+                        subject: 'Account Verification',
+                        html: emailContent,
+                    }, (error) => {
+                    if (error) {
+                        console.error(error);
+                        return res.status(500).json({ message: 'Failed to send verification email' });
+                    }
+
                         user.id = results.insertId;
                         res.json({ status: 'success', message: 'User Created' });
                     });
                 });
             });
         });
+        });
     },
 
-    login:(req, res) => {
+    verify: (req, res) => {
+        const { token } = req.query;
+
+        conn.query('UPDATE users SET is_verified = true WHERE verification_token = ?', token, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Failed to verify account' });
+        }
+
+        const htmlPath = path.join(__dirname, '/html/verification.html');
+        const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+
+        res.status(200).send(htmlContent);
+        });
+    },
+
+    login: (req, res) => {
         const { username, password } = req.body;
+        
         conn.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
             if (err) {
                 console.error('Error fetching user data: ', err);
                 res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                 return;
             }
+    
             if (results.length === 0) {
                 res.status(401).json({ status: 'error', message: 'Authentication failed. User not found.' });
                 return;
             }
+    
             const user = results[0];
+    
+            // Check if the user is verified
+            if (!user.is_verified) {
+                res.status(401).json({ status: 'error', message: 'User is not verified. Please check your email for verification.' });
+                return;
+            }
+    
+            // Continue with password comparison
             bcrypt.compare(password, user.password, (bcryptErr, isPasswordValid) => {
                 if (bcryptErr) {
                     console.error('Error comparing passwords: ', bcryptErr);
                     res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                     return;
                 }
+    
                 if (!isPasswordValid) {
                     res.status(401).json({ status: 'error', message: 'Authentication failed. Incorrect password.' });
                     return;
                 }
+    
                 const payload = {
                     userId: user.id,
                     username: user.username,
-                    role: user.role
+                    role: user.role,
                 };
+    
                 const accessToken = jwt.sign(payload, secretKey, { expiresIn: '1h' });
+    
                 res.json({
                     status: 'success',
                     message: 'User logged successfully',
                     role: user.role,
                     data: {
-                        accessToken
+                        accessToken,
                     },
                 });
             });
         });
-    }, 
+    },
 
     getMe:(req, res) => {
         const userId = req.user.userId;

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Verify Berhasil</title>
+    </head>
+
+    <style>
+        @import url('https://storage.googleapis.com/imageasset/mail.jpeg');
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+    font-family: 'Muli', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 50px;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    background-image: url(https://storage.googleapis.com/imageasset/bg.png);
+    background-size: cover;
+    background-position: center;
+    width: 90%;
+}
+
+
+    .container {
+        backdrop-filter: blur(20px);
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        padding: 30px;
+        max-width: 1000px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .info {
+        background-color: #eaeaea;
+        display: inline-block;
+        padding: 10px;
+        line-height: 20px;
+        max-width: 400px;
+        color: #0c4a6e;
+        border-radius: 5px;
+    }
+
+    a{
+        color: #0c4a6e;
+        text-decoration: none;
+        text-transform: capitalize;
+    }
+
+            /* Verification Button */
+    .button{
+        width: 100px;
+        margin: 0 auto;
+        margin-bottom: 20px;
+        display: flex;
+        padding: 15px 20px;
+        background-color: #34d399;
+        text-decoration: none;
+        text-align: center;
+        transition: background-color 0.3s ease;
+        justify-content: center;
+        transition: all .5s;
+        border-radius: 7px;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    a:hover{
+        cursor: pointer;
+    }
+
+    .button:hover {
+        background-color: #10b981;
+        transition: all .5s;
+        cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+        .code-container {
+            flex-wrap: wrap;
+        }
+
+        .code {
+            font-size: 60px;
+            height: 50px;
+            max-width: 30px;
+        }
+    }
+    </style>
+
+    <body>
+        <div class="container">
+            <h1 style="color: #0c4a6e;">Verifikasi Berhasil</h1>
+            <p style="color: #0c4a6e;">
+                "Verifikasi E-mail berhasil! silahkan kembali ke Tomatify web app untuk login"
+            </p>
+            <button class="button">
+                <a href="http://localhost:5173/">kembali</a>
+            </button>
+            <div class="code-container">
+                <img src="https://storage.googleapis.com/imageasset/icon.png" height="200px" width="200px">
+            </div>
+            <small class="info">
+                Manfaatkan semua fitur yang tersedia di aplikasi Tomatify untuk menjaga tomatmu agar tetap sehat
+            </small>
+        </div>
+    </body>
+</html>
