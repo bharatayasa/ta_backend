@@ -63,7 +63,7 @@ module.exports = {
                         return;
                     }
 
-                    const verificationLink = `http://localhost:5000/verify?token=${verificationToken}`;
+                    const verificationLink = `${process.env.ENDPOINT}/verify?token=${verificationToken}`;
 
                     const verificationHtmlPath = path.join(__dirname, '/html/email.html');
                     let verificationHtmlContent;
@@ -112,9 +112,20 @@ module.exports = {
     },
 
     login: (req, res) => {
-        const { username, password } = req.body;
+        const { usernameoremail, password } = req.body;
         
-        conn.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
+        let identifier;
+        let condition;
+    
+        if (usernameoremail.includes('@')) {
+            identifier = 'email';
+            condition = usernameoremail;
+        } else {
+            identifier = 'username';
+            condition = usernameoremail;
+        }
+    
+        conn.query(`SELECT * FROM users WHERE ${identifier} = ?`, [condition], (err, results) => {
             if (err) {
                 console.error('Error fetching user data: ', err);
                 res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -128,13 +139,11 @@ module.exports = {
     
             const user = results[0];
     
-            // Check if the user is verified
             if (!user.is_verified) {
                 res.status(401).json({ status: 'error', message: 'User is not verified. Please check your email for verification.' });
                 return;
             }
     
-            // Continue with password comparison
             bcrypt.compare(password, user.password, (bcryptErr, isPasswordValid) => {
                 if (bcryptErr) {
                     console.error('Error comparing passwords: ', bcryptErr);
@@ -149,7 +158,7 @@ module.exports = {
     
                 const payload = {
                     userId: user.id,
-                    username: user.username,
+                    [identifier]: user[identifier], // Menggunakan identifier sebagai key
                     role: user.role,
                 };
     
@@ -165,7 +174,7 @@ module.exports = {
                 });
             });
         });
-    },
+    },    
 
     getMe:(req, res) => {
         const userId = req.user.userId;
