@@ -1,28 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
+const verifyAccessToken = require('../verifyAccessToken');
 
 require('dotenv').config();
-
-const secretKey = process.env.JWT_SECRET;
 
 const userController = require('../controller/users');
 const predik = require('../controller/predikInput');
 const prediksiControl = require('../controller/prediksiControl');
-
-function verifyAccessToken(req, res, next) {
-    const token = req.header('Authorization');
-    if (!token) {
-        return res.status(401).json({ status: 'error', message: 'Unauthorized' });
-    }
-    jwt.verify(token, secretKey, (err, user) => {
-        if (err) {
-            return res.status(403).json({ status: 'error', message: 'Access denied' });
-        }
-        req.user = user;
-        next();
-    });
-}
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
