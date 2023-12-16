@@ -87,7 +87,7 @@ module.exports = {
                     }
 
                         user.id = results.insertId;
-                        res.json({ status: 'success', message: 'User Created' });
+                        res.status(200).json({ status: 'success', message: 'User Created' });
                     });
                 });
             });
@@ -158,13 +158,13 @@ module.exports = {
     
                 const payload = {
                     userId: user.id,
-                    [identifier]: user[identifier], // Menggunakan identifier sebagai key
+                    [identifier]: user[identifier],
                     role: user.role,
                 };
     
                 const accessToken = jwt.sign(payload, secretKey, { expiresIn: '1h' });
     
-                res.json({
+                res.status(200).json({
                     status: 'success',
                     message: 'User logged successfully',
                     role: user.role,
@@ -174,7 +174,7 @@ module.exports = {
                 });
             });
         });
-    },    
+    },
 
     getMe:(req, res) => {
         const userId = req.user.userId;
@@ -187,7 +187,7 @@ module.exports = {
                 return res.status(404).json({ status: 'error', message: 'Resource not found' });
             }
             const user = results[0];
-            res.json({
+            res.status(200).json({
                 status: 'success',
                 message: 'User retrieved',
                 data: {
@@ -237,7 +237,7 @@ module.exports = {
                             console.error('Error updating user: ', err);
                             return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         }
-                        res.json({
+                        res.status(200).json({
                             status: 'success',
                             message: 'User updated',
                             data: {
@@ -299,7 +299,7 @@ module.exports = {
                             return res.status(404).json({ status: 'error', message: 'User not found' });
                         }
     
-                        res.json({
+                        res.status(200).json({
                             status: 'success',
                             message: 'Password updated successfully',
                         });
@@ -318,7 +318,7 @@ module.exports = {
                 console.error('Error fetching user data: ', err);
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
-            res.json({
+            res.status(200).json({
                 status: 'success',
                 message: 'Users retrieved',
                 data: results,
@@ -339,7 +339,7 @@ module.exports = {
             if (results.length === 0) {
                 return res.status(404).json({ status: 'error', message: 'User not found' });
             }
-            res.json({
+            res.status(200).json({
                 status: 'success',
                 message: 'User retrieved',
                 data: results[0], 
@@ -393,7 +393,7 @@ module.exports = {
                         }
     
                         newUser.id = result.insertId;
-                        res.json({
+                        res.status(200).json({
                             status: 'success',
                             message: 'User created',
                             data: {
@@ -444,7 +444,7 @@ module.exports = {
                             console.error('Error updating user: ', err);
                             return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         }
-                        res.json({
+                        res.status(200).json({
                             status: 'success',
                             message: 'User updated',
                             data: {
@@ -474,7 +474,7 @@ module.exports = {
             if (result.affectedRows === 0) {
                 return res.status(404).json({ status: 'error', message: 'User not found' });
             }
-            res.json({
+            res.status(200).json({
                 status: 'success',
                 message: 'User deleted',
             });
