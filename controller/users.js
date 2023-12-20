@@ -351,7 +351,9 @@ module.exports = {
         if (!req.body.username || !req.body.name || !req.body.email || !req.body.password || !req.body.role) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
+    
         const { username, name, email, password, role } = req.body;
+        const is_verified = 1; // Set is_verified to 1 by default
     
         conn.query('SELECT email FROM users WHERE email = ?', [email], (err, emailResults) => {
             if (err) {
@@ -359,7 +361,7 @@ module.exports = {
                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
             }
             if (emailResults.length > 0) {
-                return res.status(400).json({ status: 'error', message: 'e-mail sudah ada' });
+                return res.status(400).json({ status: 'error', message: 'E-mail already exists' });
             }
     
             conn.query('SELECT username FROM users WHERE username = ?', [username], (err, usernameResults) => {
@@ -368,7 +370,7 @@ module.exports = {
                     return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                 }
                 if (usernameResults.length > 0) {
-                    return res.status(400).json({ status: 'error', message: 'Username sudah ada' });
+                    return res.status(400).json({ status: 'error', message: 'Username already exists' });
                 }
     
                 bcrypt.hash(password, 10, (err, hashedPassword) => {
@@ -382,29 +384,34 @@ module.exports = {
                         name,
                         email,
                         password: hashedPassword,
-                        role
+                        role,
+                        is_verified
                     };
     
-                    conn.query('INSERT INTO users (username, name, email, password, role) VALUES (?, ?, ?, ?, ?)', 
-                    [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role], (err, result) => {
-                        if (err) {
-                            console.error('Error adding user: ', err);
-                            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-                        }
-    
-                        newUser.id = result.insertId;
-                        res.status(200).json({
-                            status: 'success',
-                            message: 'User created',
-                            data: {
-                                id: newUser.id,
-                                username: newUser.username,
-                                name: newUser.name,
-                                email: newUser.email,
-                                role: newUser.role,
+                    conn.query(
+                        'INSERT INTO users (username, name, email, password, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)',
+                        [newUser.username, newUser.name, newUser.email, newUser.password, newUser.role, newUser.is_verified],
+                        (err, result) => {
+                            if (err) {
+                                console.error('Error adding user: ', err);
+                                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                             }
-                        });
-                    });
+    
+                            newUser.id = result.insertId;
+                            res.status(200).json({
+                                status: 'success',
+                                message: 'User created',
+                                data: {
+                                    id: newUser.id,
+                                    username: newUser.username,
+                                    name: newUser.name,
+                                    email: newUser.email,
+                                    role: newUser.role,
+                                    is_verified: newUser.is_verified
+                                }
+                            });
+                        }
+                    );
                 });
             });
         });
