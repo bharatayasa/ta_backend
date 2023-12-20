@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const corsOptions = {
-    origin: 'https://tomatify.netlify.app',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,

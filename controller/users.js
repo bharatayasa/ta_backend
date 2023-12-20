@@ -412,9 +412,9 @@ module.exports = {
 
     adminUpdateUser: (req, res) => {
         const { id } = req.params;
-        const { username, name, email, role } = req.body;
+        const { username, name, email, role, is_verified } = req.body;
     
-        if (!id || !username || !name || !email || !role) {
+        if (!id || !username || !name || !email || !role || !is_verified) {
             return res.status(400).json({ status: 'error', message: 'Missing required fields' });
         }
     
@@ -437,8 +437,8 @@ module.exports = {
                 }
     
                 conn.query(
-                    'UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?',
-                    [username, name, email, role, id],
+                    'UPDATE users SET username = ?, name = ?, email = ?, role = ?, is_verified = ? WHERE id = ?',
+                    [username, name, email, role, is_verified, id],
                     (err, result) => {
                         if (err) {
                             console.error('Error updating user: ', err);
@@ -453,6 +453,7 @@ module.exports = {
                                 name,
                                 email,
                                 role,
+                                is_verified
                             },
                         });
                     }
