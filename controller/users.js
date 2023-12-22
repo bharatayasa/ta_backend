@@ -9,6 +9,7 @@ const transporter = require('../controller/mailer.js');
 require('dotenv').config();
 
 const secretKey = process.env.JWT_SECRET;
+const linkVerify = process.env.ENDPOINT
 
 module.exports = {
     register: (req, res) => {
@@ -52,17 +53,19 @@ module.exports = {
                 password: hashedPassword,
                 role,
                 is_verified: false,
+                verification_token: verificationToken,
             };
 
-            const query = 'INSERT INTO users (username, name, email, password, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)';
-                conn.query(query, [user.username, user.name, user.email, user.password, user.role, user.is_verified], (err, results) => {
+            const query = 'INSERT INTO users (username, name, email, password, role, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            conn.query(query, [user.username, user.name, user.email, user.password, user.role, user.verification_token, user.is_verified], (err, results) => {
+
                     if (err) {
                         console.error('Error registering user: ', err);
                         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
                         return;
                     }
 
-                    const verificationLink = `${process.env.ENDPOINT}/verify?token=${verificationToken}`;
+                    const verificationLink = `${linkVerify}/verify?token=${verificationToken}`;
 
                     const verificationHtmlPath = path.join(__dirname, '/html/email.html');
                     let verificationHtmlContent;
