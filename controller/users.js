@@ -55,8 +55,8 @@ module.exports = {
                 verification_token: verificationToken,
             };
 
-            const query = 'INSERT INTO users (username, name, email, password, role, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?)';
-                conn.query(query, [user.username, user.name, user.email, user.password, user.role, verificationToken, user.is_verified], (err, results) => {
+            const query = 'INSERT INTO users (username, name, email, password, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)';
+                conn.query(query, [user.username, user.name, user.email, user.password, user.role, user.is_verified], (err, results) => {
                     if (err) {
                         console.error('Error registering user: ', err);
                         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
