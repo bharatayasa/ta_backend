@@ -52,7 +52,6 @@ module.exports = {
                 password: hashedPassword,
                 role,
                 is_verified: false,
-                verification_token: verificationToken,
             };
 
             const query = 'INSERT INTO users (username, name, email, password, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)';
