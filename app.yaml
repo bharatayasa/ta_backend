@@ -1,5 +1,5 @@
 runtime: nodejs18
-service: backend2
+service: default
 env: standard
 
 instance_class: F4
